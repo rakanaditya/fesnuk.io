@@ -1,0 +1,12 @@
+{
+  "name": "facebook-vercel-app",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "start": "node api/auth.js"
+  },
+  "dependencies": {
+    "bcrypt": "^5.1.0",
+    "sqlite3": "^5.1.6"
+  }
+}
