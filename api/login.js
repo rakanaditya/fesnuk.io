@@ -10,28 +10,42 @@ export default async function handler(req, res) {
     return res.status(405).json({ success: false, message: 'Metode tidak diizinkan.' });
   }
 
-  const { username, password } = req.body;
+  let body = '';
 
-  if (!username || !password) {
-    return res.status(400).json({ success: false, message: 'Username dan password wajib diisi.' });
-  }
+  req.on('data', chunk => {
+    body += chunk;
+  });
 
-  try {
-    const user = await db.get('SELECT * FROM users WHERE username = ?', [username]);
+  req.on('end', async () => {
+    try {
+      const { username, password } = JSON.parse(body);
 
-    if (!user) {
-      return res.status(404).json({ success: false, message: 'Akun tidak ditemukan.' });
+      if (!username || !password) {
+        return res.status(400).json({ success: false, message: 'Username dan password wajib diisi.' });
+      }
+
+      const user = await db.get('SELECT * FROM users WHERE username = ?', [username]);
+
+      if (!user) {
+        return res.status(404).json({ success: false, message: 'Akun tidak ditemukan.' });
+      }
+
+      const isMatch = await bcrypt.compare(password, user.password);
+
+      if (!isMatch) {
+        return res.status(401).json({ success: false, message: 'Password salah.' });
+      }
+
+      // Sukses login
+      return res.status(200).json({
+        success: true,
+        message: 'Login berhasil.',
+        user: { id: user.id, username: user.username }
+      });
+
+    } catch (err) {
+      console.error('Login error:', err.message);
+      return res.status(500).json({ success: false, message: 'Terjadi kesalahan saat login.' });
     }
-
-    const match = await bcrypt.compare(password, user.password);
-
-    if (!match) {
-      return res.status(401).json({ success: false, message: 'Password salah.' });
-    }
-
-    return res.status(200).json({ success: true, message: 'Login berhasil.', user: { username: user.username } });
-  } catch (err) {
-    console.error('Error saat login:', err.message);
-    return res.status(500).json({ success: false, message: 'Terjadi kesalahan saat login.' });
-  }
+  });
 }
