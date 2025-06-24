@@ -12,29 +12,33 @@
 <script>
 document.getElementById("registerForm").onsubmit = async (e) => {
   e.preventDefault();
+  try {
+    const res = await fetch('/api/register', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        username: e.target.username.value,
+        password: e.target.password.value
+      })
+    });
 
-  const username = e.target.username.value.trim();
-  const password = e.target.password.value.trim();
+    let data;
+    try {
+      data = await res.json(); // coba parse JSON
+    } catch (jsonErr) {
+      throw new Error("Respon bukan JSON. Mungkin server error.");
+    }
 
-  if (!username || !password) {
-    alert('Username dan password wajib diisi.');
-    return;
-  }
+    if (data.success) {
+      alert('Registrasi berhasil!');
+      window.location.href = 'login.html';
+    } else {
+      alert(data.message);
+    }
 
-  const res = await fetch('/api/register', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ username, password }),
-  });
-
-  const data = await res.json();
-  console.log(data); // 👈 Debugging output di browser console
-
-  if (data.success) {
-    alert('Registrasi berhasil! Akun berhasil dibuat dan data telah disimpan.');
-    window.location.href = 'index.html';
-  } else {
-    alert(data.message);
+  } catch (err) {
+    console.error('Error:', err);
+    alert('Terjadi kesalahan saat mengirim data. ' + err.message);
   }
 };
 </script>
