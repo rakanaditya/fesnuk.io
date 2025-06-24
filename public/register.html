@@ -28,6 +28,7 @@ document.getElementById("registerForm").onsubmit = async (e) => {
   });
 
   const data = await res.json();
+  console.log(data); // 👈 Debugging output di browser console
 
   if (data.success) {
     alert('Registrasi berhasil! Akun berhasil dibuat dan data telah disimpan.');
