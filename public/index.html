@@ -29,6 +29,7 @@ document.getElementById("loginForm").onsubmit = async (e) => {
   });
   const data = await res.json();
   if (data.success) {
+    alert('Registrasi berhasil! Akun berhasil dibuat dan data telah disimpan.');
     window.location.href = 'home.html';
   } else {
     alert(data.message);
